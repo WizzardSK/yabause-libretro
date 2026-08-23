@@ -84,6 +84,14 @@ ifneq (,$(findstring unix,$(platform)))
 		USE_ARM_DRC = 1
 		DYNAREC_DEVMIYAX = 1
 		FLAGS += -DARM
+	# Native AArch64 (ARM64) desktop build (e.g. the libretro linux-aarch64 job,
+	# which invokes `make platform=unix` on an aarch64 runner). Use the devMiyax
+	# AArch64 SH2 dynarec and drop the x86-only SSE math flags.
+	else ifneq (,$(filter aarch64 arm64,$(shell uname -m)))
+		HAVE_SSE = 0
+		USE_AARCH64_DRC = 1
+		DYNAREC_DEVMIYAX = 1
+		FLAGS += -DAARCH64
 	endif
 
 # Switch Lakka (arm64)
