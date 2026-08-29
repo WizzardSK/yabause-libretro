@@ -1,0 +1,20 @@
+name: aarch64 preflight
+
+on:
+  push:
+    branches: [ ci-linux-aarch64 ]
+  workflow_dispatch:
+
+jobs:
+  linux-aarch64:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq libgl-dev
+      - name: build (same command the buildbot's aarch64 template runs)
+        run: |
+          set -e
+          make -C yabause/src/libretro platform=unix -j$(nproc)
+          ls -la yabause/src/libretro/kronos_libretro.so
+          file yabause/src/libretro/kronos_libretro.so
