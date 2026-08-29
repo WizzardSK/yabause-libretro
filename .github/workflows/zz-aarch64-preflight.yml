@@ -2,7 +2,7 @@ name: aarch64 preflight
 
 on:
   push:
-    branches: [ ci-linux-aarch64 ]
+    branches: [ ci-linux-aarch64, ci-linux-aarch64-kronos ]
   workflow_dispatch:
 
 jobs:
