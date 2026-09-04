@@ -399,7 +399,9 @@ else ifeq ($(platform), libnx)
 	CFLAGS := $(DEFINES) -g -O2 \
 		-fPIE -I$(LIBNX)/include/ -ffunction-sections -fdata-sections \
 		-ftls-model=local-exec -Wl,--allow-multiple-definition -specs=$(LIBNX)/switch.specs
-	CFLAGS += $(INCDIRS) $(INCLUDE) -D__SWITCH__ -DHAVE_LIBNX
+	# -DNX is this tree's own Switch switch: memory.c and cdbase.c take their
+	# no-mmap, no-host-CD paths from it, and the GL headers pick the ES ones.
+	CFLAGS += $(INCDIRS) $(INCLUDE) -D__SWITCH__ -DHAVE_LIBNX -DNX
 	CXXFLAGS := $(ASFLAGS) $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 	CFLAGS += -std=gnu11
 	STATIC_LINKING = 1
