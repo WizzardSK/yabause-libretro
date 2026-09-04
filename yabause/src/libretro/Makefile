@@ -328,7 +328,14 @@ endif
 	FORCE_GLES = 1
 	FLAGS += -DARM -DIOS
 	USE_GLES_FRAMEWORK = 1
+	# The ios9 job is the one that comes through here, and a deployment target
+	# of 11.0 is not a thing an armv7 build can have - that architecture is gone
+	# by then. 8.0 is what the same job asks for in yabause.
+ifeq ($(platform), ios9)
+	MINVERSION = -miphoneos-version-min=8.0
+else
 	MINVERSION = -miphoneos-version-min=11.0
+endif
 	FLAGS += $(MINVERSION)
 	LDFLAGS += $(MINVERSION)
 
@@ -383,6 +390,20 @@ else ifeq ($(platform), switch)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).a
 	include $(LIBTRANSISTOR_HOME)/libtransistor.mk
 	STATIC_LINKING=1
+
+# Nintendo Switch (libnx)
+else ifeq ($(platform), libnx)
+	include $(DEVKITPRO)/libnx/switch_rules
+	TARGET := $(TARGET_NAME)_libretro_$(platform).a
+	DEFINES := -DSWITCH=1 -U__linux__ -U__linux -DRARCH_INTERNAL
+	CFLAGS := $(DEFINES) -g -O2 \
+		-fPIE -I$(LIBNX)/include/ -ffunction-sections -fdata-sections \
+		-ftls-model=local-exec -Wl,--allow-multiple-definition -specs=$(LIBNX)/switch.specs
+	CFLAGS += $(INCDIRS) $(INCLUDE) -D__SWITCH__ -DHAVE_LIBNX
+	CXXFLAGS := $(ASFLAGS) $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
+	CFLAGS += -std=gnu11
+	STATIC_LINKING = 1
+	HAVE_SSE = 0
 
 # Emscripten
 else ifeq ($(platform), emscripten)

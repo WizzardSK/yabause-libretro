@@ -1,0 +1,36 @@
+name: buildbot preflight (libnx + ios9)
+on: [push, workflow_dispatch]
+
+jobs:
+  libnx:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkita64:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the core the way the libnx template does
+        run: |
+          export DEVKITPRO=/opt/devkitpro
+          export DEVKITA64=$DEVKITPRO/devkitA64
+          export LIBNX=$DEVKITPRO/libnx
+          export PATH=$DEVKITA64/bin:$DEVKITPRO/tools/bin:$PATH
+          make -C yabause/src/libretro -f Makefile -j$(nproc) platform=libnx
+      - name: Check
+        run: |
+          f=yabause/src/libretro/yabasanshiro_libretro_libnx.a
+          ls -l "$f"
+          /opt/devkitpro/devkitA64/bin/aarch64-none-elf-ar t "$f" | head -5
+          /opt/devkitpro/devkitA64/bin/aarch64-none-elf-nm "$f" 2>/dev/null | grep -m3 " T retro_run" || true
+
+  ios9-flags:
+    # A real armv7 build needs an SDK that still has that architecture; the
+    # runners here do not. What can be checked is that platform=ios9 picks the
+    # legacy branch with the right arch and deployment target.
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          make -C yabause/src/libretro -f Makefile -n platform=ios9 2>/dev/null | grep -m1 -- "-arch armv7"
+          make -C yabause/src/libretro -f Makefile -n platform=ios9 2>/dev/null | grep -m1 -- "-miphoneos-version-min=8.0"
+          echo "--- ios-arm64 keeps 11.0:"
+          make -C yabause/src/libretro -f Makefile -n platform=ios-arm64 2>/dev/null | grep -m1 -- "-miphoneos-version-min=11.0"
